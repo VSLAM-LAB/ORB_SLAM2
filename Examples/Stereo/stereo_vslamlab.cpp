@@ -152,12 +152,18 @@ int main(int argc, char **argv) {
     // Read image from file
     im_left = cv::imread(leftImageFilenames[ni], cv::IMREAD_UNCHANGED);
     im_right = cv::imread(rightImageFilenames[ni], cv::IMREAD_UNCHANGED);
+
+    if (im_left.cols > 640) {
+      cv::resize(im_left, im_left, cv::Size(640, 480), 0, 0, cv::INTER_AREA);
+      cv::resize(im_right, im_right, cv::Size(640, 480), 0, 0, cv::INTER_AREA);
+    }
+
     ORB_SLAM2::Seconds tframe = timestamps[ni];
 
     // Pass the image to the SLAM system
     std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
     // SLAM.TrackMonocular(im,tframe);
-    SLAM.TrackStereo(im_left, im_right, tframe);    
+    SLAM.TrackStereo(im_left, im_right, tframe);
     std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
 
     ORB_SLAM2::Seconds ttrack =

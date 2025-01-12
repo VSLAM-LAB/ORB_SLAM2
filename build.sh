@@ -71,7 +71,7 @@ build_library ${library_name} ${source_folder} ${verbose} ${force_build}
 ## Build ORB-SLAM2
 library_name="ORB-SLAM2"
 source_folder="${LIBRARY_DIR}"
-build_library ${library_name} ${source_folder} ${verbose} ${force_build}
+build_library ${library_name} ${source_folder} "true" ${force_build}
 
 ## Uncompress vocabulary
 echo "[ORB-SLAM2][build.sh] Uncompress vocabulary ... "

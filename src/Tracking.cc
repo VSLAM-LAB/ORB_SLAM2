@@ -122,6 +122,14 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
     int fIniThFAST = fSettings["ORBextractor.iniThFAST"];
     int fMinThFAST = fSettings["ORBextractor.minThFAST"];
 
+    int w = fCalibration["Camera.w"];
+    int h = fCalibration["Camera.h"];
+    nFeatures = int(0.00682966807 * (w * h) - 1098.0740336);
+    if (nFeatures < 1000)
+        nFeatures = 1000;
+    if (nFeatures > 2000)
+        nFeatures = 2000;
+
     cout << endl  << "[Tracking.cc] ORB Extractor Parameters: " << strSettingPath << endl;
     cout << "- Number of Features: " << nFeatures << endl;
     cout << "- Scale Levels: " << nLevels << endl;

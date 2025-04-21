@@ -54,5 +54,8 @@ target_link_libraries(${PROJECT_NAME}
 add_executable(mono Examples/mono/mono_vslamlab.cpp)
 target_link_libraries(mono ${PROJECT_NAME})
 
+add_executable(stereo Examples/Stereo/stereo_vslamlab.cpp)
+target_link_libraries(stereo ${PROJECT_NAME})
+
 add_executable(rgbd Examples/RGB-D/rgbd_vslamlab.cpp)
 target_link_libraries(rgbd ${PROJECT_NAME})

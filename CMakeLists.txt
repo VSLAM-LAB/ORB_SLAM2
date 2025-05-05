@@ -56,3 +56,10 @@ target_link_libraries(mono ${PROJECT_NAME})
 
 add_executable(rgbd Examples/RGB-D/rgbd_vslamlab.cpp)
 target_link_libraries(rgbd ${PROJECT_NAME})
+
+install(TARGETS ${PROJECT_NAME} mono rgbd
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib)
+
+install(DIRECTORY include/ DESTINATION include)

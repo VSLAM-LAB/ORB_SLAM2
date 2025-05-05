@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.16)
 project(ORB_SLAM2)
 
+
+# RPATH setup for Conda compatibility
+set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
+set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+
 set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -O3 -march=native")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -O3 -march=native")
@@ -12,6 +17,7 @@ find_package(OpenCV REQUIRED )
 find_package(Eigen3  REQUIRED NO_MODULE)
 find_package(Pangolin REQUIRED)
 find_package(yaml-cpp REQUIRED)
+
 
 add_library(${PROJECT_NAME} SHARED
         src/System.cc

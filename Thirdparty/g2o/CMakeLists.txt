@@ -156,3 +156,18 @@ ADD_LIBRARY(g2o SHARED
         g2o/stuff/property.cpp
         g2o/stuff/property.h
 )
+
+# Install the shared library
+install(TARGETS g2o
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        RUNTIME DESTINATION bin
+        INCLUDES DESTINATION include)
+
+# Install header files
+install(DIRECTORY g2o/core DESTINATION include/g2o FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
+install(DIRECTORY g2o/types DESTINATION include/g2o FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
+install(DIRECTORY g2o/stuff DESTINATION include/g2o FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
+
+# Optional: config.h if it's needed by downstream consumers
+install(FILES ${g2o_SOURCE_DIR}/config.h DESTINATION include/g2o)

@@ -1,11 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 project(ORB_SLAM2)
 
-
-# RPATH setup for Conda compatibility
-set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
-set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-
 set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -O3 -march=native")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -O3 -march=native")
@@ -41,10 +36,26 @@ add_library(${PROJECT_NAME} SHARED
         src/Viewer.cc
 )
 
+#if(EXISTS "${PROJECT_SOURCE_DIR}/Thirdparty/DBoW2")
+set(DBoW2_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/Thirdparty/DBoW2/include")
+set(DBoW2_LIBRARIES "${PROJECT_SOURCE_DIR}/Thirdparty/DBoW2/lib/libDBoW2.so")
+
+#else()
+    #find_package(DBoW2 REQUIRED)
+#endif()
+
+#if(EXISTS "${PROJECT_SOURCE_DIR}/Thirdparty/g2o")
+#    g2o_INCLUDE_DIRS="${PROJECT_SOURCE_DIR}/Thirdparty/g2o/include"
+#    g2o_LIBRARIES="${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so"
+#else()
+    find_package(g2o REQUIRED)
+#endif()
+
 target_include_directories(${PROJECT_NAME} PUBLIC
         ${PROJECT_SOURCE_DIR}
         ${PROJECT_SOURCE_DIR}/include
         ${DBoW2_INCLUDE_DIRS}
+        #${g2o_INCLUDE_DIRS}
 )
 
 target_link_libraries(${PROJECT_NAME}
@@ -52,8 +63,8 @@ target_link_libraries(${PROJECT_NAME}
         Eigen3::Eigen
         ${YAML_CPP_LIBRARIES}
         ${Pangolin_LIBRARIES}
-        ${PROJECT_SOURCE_DIR}/Thirdparty/DBoW2/lib/libDBoW2.so
-        ${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so
+        ${DBoW2_LIBRARIES}
+        ${g2o_LIBRARIES}
 )
 
 # Build examples

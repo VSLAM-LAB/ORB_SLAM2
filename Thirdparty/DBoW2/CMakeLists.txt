@@ -48,6 +48,22 @@ configure_file(DBoW2/DBoW2.cmake.in
 
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
+# install(FILES "${PROJECT_BINARY_DIR}/DBoW2Config.cmake"
+#         DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/cmake/DBoW2/)
+
+# Install the shared library
+install(TARGETS ${PROJECT_NAME}
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        RUNTIME DESTINATION bin
+        INCLUDES DESTINATION include)
+
+# Install the header files
+install(DIRECTORY DBoW2/ DESTINATION include/DBoW2 FILES_MATCHING PATTERN "*.h")
+install(DIRECTORY DUtils/ DESTINATION include/DUtils FILES_MATCHING PATTERN "*.h")
+
+# Optionally install the config file
 install(FILES "${PROJECT_BINARY_DIR}/DBoW2Config.cmake"
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/cmake/DBoW2/)
+        DESTINATION lib/cmake/DBoW2/)
+
 

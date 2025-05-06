@@ -1,15 +1,24 @@
 cmake_minimum_required(VERSION 3.16)
 project(DBoW2)
 
-set(CMAKE_BUILD_TYPE Release)
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -O3 -march=native")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -O3 -march=native")
+# Compiler settings
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_BUILD_TYPE Release)
+
+# Output directories
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 
-add_compile_options(-Wextra -Wpedantic)
+# Compiler flags
+add_compile_options(-Wall -Wextra -Wpedantic -O3 -march=native)
 
+# Dependencies
+find_package(OpenCV REQUIRED)
+
+# Create shared library
 set(HDRS_DBOW2
   DBoW2/BowVector.h
   DBoW2/FORB.h 
@@ -30,26 +39,23 @@ set(SRCS_DUTILS
   DUtils/Random.cpp
   DUtils/Timestamp.cpp)
 
-find_package(OpenCV REQUIRED)
-
 add_library(${PROJECT_NAME} SHARED ${SRCS_DBOW2} ${SRCS_DUTILS})
 
+
+# Include directories
 target_include_directories(${PROJECT_NAME} PUBLIC
         include/DBoW2/
         include/
 )
 
+# Link libraries
 target_link_libraries(${PROJECT_NAME}
         ${OpenCV_LIBRARIES}
 )
 
+# Config file for find_package support
 configure_file(DBoW2/DBoW2.cmake.in
         "${PROJECT_BINARY_DIR}/DBoW2Config.cmake" @ONLY)
-
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
-
-# install(FILES "${PROJECT_BINARY_DIR}/DBoW2Config.cmake"
-#         DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/cmake/DBoW2/)
 
 # Install the shared library
 install(TARGETS ${PROJECT_NAME}

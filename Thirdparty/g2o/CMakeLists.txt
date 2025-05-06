@@ -3,74 +3,40 @@ set(CMAKE_LEGACY_CYGWIN_WIN32 0)
 
 project(g2o)
 
-set(CMAKE_BUILD_TYPE Release)
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -O3 -march=native")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -O3 -march=native")
+# Compiler settings
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_BUILD_TYPE Release)
+
+# Output directories
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 
-SET(g2o_C_FLAGS)
-SET(g2o_CXX_FLAGS)
+# Compiler flags
+add_compile_options(-Wall -Wextra -Wpedantic -O3 -march=native)
 
-
-# There seems to be an issue with MSVC8
-# see http://eigen.tuxfamily.org/bz/show_bug.cgi?id=83
+# Workaround for MSVC90
 if(MSVC90)
   add_definitions(-DEIGEN_DONT_ALIGN_STATICALLY=1)
   message(STATUS "Disabling memory alignment for MSVC8")
-endif(MSVC90)
+endif()
 
-# Set the output directory for the build executables and libraries
-IF(WIN32)
-  SET(g2o_LIBRARY_OUTPUT_DIRECTORY ${g2o_SOURCE_DIR}/bin CACHE PATH "Target for the libraries")
-ELSE(WIN32)
-  SET(g2o_LIBRARY_OUTPUT_DIRECTORY ${g2o_SOURCE_DIR}/lib CACHE PATH "Target for the libraries")
-ENDIF(WIN32)
-SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${g2o_LIBRARY_OUTPUT_DIRECTORY})
-SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${g2o_LIBRARY_OUTPUT_DIRECTORY})
-SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${g2o_RUNTIME_OUTPUT_DIRECTORY})
+# Define UNIX macro explicitly
+add_definitions(-DUNIX)
+message(STATUS "Compiling on Unix")
 
-# Detect OS and define macros appropriately
-IF(UNIX)
-  ADD_DEFINITIONS(-DUNIX)
-  MESSAGE(STATUS "Compiling on Unix")
-ENDIF(UNIX)
-
-# Compiler specific options for gcc
-SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -march=native")
-SET(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -march=native")
-
-# activate warnings !!!
-SET(g2o_C_FLAGS "${g2o_C_FLAGS} -Wall -W")
-SET(g2o_CXX_FLAGS "${g2o_CXX_FLAGS} -Wall -W")
-
-# specifying compiler flags
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${g2o_CXX_FLAGS}")
-SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${g2o_C_FLAGS}")
-
-# Find Eigen3
-SET(EIGEN3_INCLUDE_DIR ${G2O_EIGEN3_INCLUDE})
-find_package(Eigen3  REQUIRED NO_MODULE)
-IF(EIGEN3_FOUND)
-  SET(G2O_EIGEN3_INCLUDE ${EIGEN3_INCLUDE_DIR} CACHE PATH "Directory of Eigen3")
-ELSE(EIGEN3_FOUND)
-  SET(G2O_EIGEN3_INCLUDE "" CACHE PATH "Directory of Eigen3")
-ENDIF(EIGEN3_FOUND)
+# Dependencies
+find_package(Eigen3 REQUIRED NO_MODULE)
+set(G2O_EIGEN3_INCLUDE ${EIGEN3_INCLUDE_DIR} CACHE PATH "Directory of Eigen3")
 
 # Generate config.h
-SET(G2O_CXX_COMPILER "${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER}")
+set(G2O_CXX_COMPILER "${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER}")
 configure_file(config.h.in ${g2o_SOURCE_DIR}/config.h)
 
-# Set up the top-level include directories
-INCLUDE_DIRECTORIES(
-        ${g2o_SOURCE_DIR}/core
-        ${g2o_SOURCE_DIR}/types
-        ${g2o_SOURCE_DIR}/stuff
-        ${G2O_EIGEN3_INCLUDE})
-
-# Include the subdirectories
-ADD_LIBRARY(g2o SHARED
+# Create shared library
+add_library(${PROJECT_NAME} SHARED
         #types
         g2o/types/types_sba.h
         g2o/types/types_six_dof_expmap.h
@@ -157,17 +123,22 @@ ADD_LIBRARY(g2o SHARED
         g2o/stuff/property.h
 )
 
-# Install the shared library
+# Include directories
+include_directories(
+    ${g2o_SOURCE_DIR}/core
+    ${g2o_SOURCE_DIR}/types
+    ${g2o_SOURCE_DIR}/stuff
+    ${G2O_EIGEN3_INCLUDE}
+)
+
+# Install targets and headers
 install(TARGETS g2o
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
         RUNTIME DESTINATION bin
         INCLUDES DESTINATION include)
 
-# Install header files
 install(DIRECTORY g2o/core DESTINATION include/g2o FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
 install(DIRECTORY g2o/types DESTINATION include/g2o FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
 install(DIRECTORY g2o/stuff DESTINATION include/g2o FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
-
-# Optional: config.h if it's needed by downstream consumers
 install(FILES ${g2o_SOURCE_DIR}/config.h DESTINATION include/g2o)

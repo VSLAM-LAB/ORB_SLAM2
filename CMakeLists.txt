@@ -45,6 +45,9 @@ set(DBoW2_LIBRARIES "${PROJECT_SOURCE_DIR}/Thirdparty/DBoW2/lib/libDBoW2.so")
 #endif()
 
 #if(EXISTS "${PROJECT_SOURCE_DIR}/Thirdparty/g2o")
+set(g2o_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/Thirdparty/g2o/include")
+set(g2o_LIBRARIES "${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so")
+
 #    g2o_INCLUDE_DIRS="${PROJECT_SOURCE_DIR}/Thirdparty/g2o/include"
 #    g2o_LIBRARIES="${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so"
 #else()

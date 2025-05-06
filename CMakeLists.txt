@@ -51,7 +51,7 @@ set(g2o_LIBRARIES "${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so")
 #    g2o_INCLUDE_DIRS="${PROJECT_SOURCE_DIR}/Thirdparty/g2o/include"
 #    g2o_LIBRARIES="${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so"
 #else()
-    find_package(g2o REQUIRED)
+#     find_package(g2o REQUIRED)
 #endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC

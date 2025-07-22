@@ -73,8 +73,11 @@ target_link_libraries(${PROJECT_NAME}
 add_executable(vslamlab_orbslam2_mono Examples/mono/vslamlab_orbslam2_mono.cpp)
 target_link_libraries(vslamlab_orbslam2_mono ${PROJECT_NAME})
 
+add_executable(vslamlab_orbslam2_rgbd Examples/RGB-D/rgbd_vslamlab.cpp)
+target_link_libraries(vslamlab_orbslam2_rgbd ${PROJECT_NAME})
+
 # Install targets and headers
-install(TARGETS ${PROJECT_NAME} vslamlab_orbslam2_mono
+install(TARGETS ${PROJECT_NAME} vslamlab_orbslam2_mono vslamlab_orbslam2_rgbd
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib)

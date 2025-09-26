@@ -85,4 +85,14 @@ install(TARGETS ${PROJECT_NAME} vslamlab_orbslam2_mono
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib)
 
+install(TARGETS ${PROJECT_NAME} vslamlab_orbslam2_rgbd
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib)
+
+install(TARGETS ${PROJECT_NAME} vslamlab_orbslam2_stereo
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib)
+
 install(DIRECTORY include/ DESTINATION include)

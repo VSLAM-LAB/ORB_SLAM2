@@ -13,3 +13,4 @@ lib/
 cmake-build-debug/
 bin/
 install_orbslam2.txt
+install_orbslam2-dev.txt

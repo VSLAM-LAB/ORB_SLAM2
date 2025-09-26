@@ -401,9 +401,11 @@ void System::SaveKeyFrameTrajectoryTUM(const string &filename)
     // After a loop closure the first keyframe might not be at the origin.
     //cv::Mat Two = vpKFs[0]->GetPoseInverse();
 
-    ofstream f;
-    f.open(filename.c_str());
-    f << fixed;
+    std::ofstream f(filename.c_str());
+    f.imbue(std::locale::classic());
+
+    // CSV header
+    f << "timestamp,tx,ty,tz,qx,qy,qz,qw\n";
 
     for(size_t i=0; i<vpKFs.size(); i++)
     {
@@ -417,9 +419,16 @@ void System::SaveKeyFrameTrajectoryTUM(const string &filename)
         cv::Mat R = pKF->GetRotation().t();
         vector<float> q = Converter::toQuaternion(R);
         cv::Mat t = pKF->GetCameraCenter();
-        f << setprecision(6) << pKF->mTimeStamp << setprecision(7) << " " << t.at<float>(0) << " " << t.at<float>(1) << " " << t.at<float>(2)
-          << " " << q[0] << " " << q[1] << " " << q[2] << " " << q[3] << endl;
 
+        f << std::fixed << std::setprecision(9) << pKF->mTimeStamp << ','
+          << std::scientific << std::setprecision(7)
+          << static_cast<double>(t.at<float>(0)) << ','
+          << static_cast<double>(t.at<float>(1)) << ','
+          << static_cast<double>(t.at<float>(2)) << ','
+          << static_cast<double>(q[0]) << ','
+          << static_cast<double>(q[1]) << ','
+          << static_cast<double>(q[2]) << ','
+          << static_cast<double>(q[3]) << '\n';
     }
 
     f.close();

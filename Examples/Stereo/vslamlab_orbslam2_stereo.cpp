@@ -35,7 +35,8 @@ namespace ORB_SLAM2{
 }
 
 void LoadImages(const string &pathToSequence, const string &rgb_csv,
-                vector<string> &imageFilenames, vector<ORB_SLAM2::Seconds> &timestamps);
+                vector<string> &imageFilenames_l, vector<ORB_SLAM2::Seconds> &timestamps,
+                vector<string> &imageFilenames_r);
 std::string paddingZeros(const std::string& number, const size_t numberOfZeros = 5);
 
 void removeSubstring(std::string& str, const std::string& substring) {
@@ -114,15 +115,16 @@ int main(int argc, char **argv)
 
 
     // Retrieve paths to images
-    vector<string> imageFilenames{};
+    vector<string> imageFilenames_l{};
+    vector<string> imageFilenames_r{};
     vector<ORB_SLAM2::Seconds> timestamps{};
-    LoadImages(sequence_path, rgb_csv, imageFilenames, timestamps);
+    LoadImages(sequence_path, rgb_csv, imageFilenames_l, timestamps, imageFilenames_r);
 
-    size_t nImages = imageFilenames.size();
+    size_t nImages = imageFilenames_l.size();
 
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
     ORB_SLAM2::System SLAM(vocabulary, calibration_yaml, settings_yaml,
-                           ORB_SLAM2::System::MONOCULAR,
+                           ORB_SLAM2::System::STEREO,
                            verbose);
 
     // Vector for tracking time statistics
@@ -133,17 +135,20 @@ int main(int argc, char **argv)
     cout << "Start processing sequence ..." << endl;
     cout << "Images in the sequence: " << nImages << endl << endl;
 
+    cv::FileStorage fCalibration(calibration_yaml, cv::FileStorage::READ);
+
     // Main loop
-    cv::Mat im;
+    cv::Mat imLeft, imRight;
     for(size_t ni = 0; ni < nImages; ni++)
     {
         // Read image from file
-        im = cv::imread(imageFilenames[ni],cv::IMREAD_UNCHANGED);
+        imLeft = cv::imread(imageFilenames_l[ni],cv::IMREAD_UNCHANGED);
+        imRight = cv::imread(imageFilenames_r[ni],cv::IMREAD_UNCHANGED);
         ORB_SLAM2::Seconds tframe = timestamps[ni];
 
         // Pass the image to the SLAM system
         std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
-        SLAM.TrackMonocular(im,tframe);
+        SLAM.TrackStereo(imLeft,imRight,tframe);
         std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
 
         ORB_SLAM2::Seconds ttrack = std::chrono::duration_cast<std::chrono::duration<ORB_SLAM2::Seconds> >(t2 - t1).count();
@@ -182,11 +187,14 @@ int main(int argc, char **argv)
     return 0;
 }
 
+
 void LoadImages(const string &pathToSequence, const string &rgb_csv,
-                vector<string> &imageFilenames, vector<ORB_SLAM2::Seconds> &timestamps)
+                vector<string> &imageFilenames_l, vector<ORB_SLAM2::Seconds> &timestamps,
+                vector<string> &imageFilenames_r)
 {
 
-    imageFilenames.clear();
+    imageFilenames_l.clear();
+    imageFilenames_r.clear();
     timestamps.clear();
 
     std::ifstream in(rgb_csv);
@@ -206,13 +214,15 @@ void LoadImages(const string &pathToSequence, const string &rgb_csv,
 
         std::stringstream ss(line);
 
-        ORB_SLAM2::Seconds t;
-        std::string rel_rgb_path;
-
+        ORB_SLAM2::Seconds t_l;
+        std::string rel_rgb_path_l;
+        ORB_SLAM2::Seconds t_r;
+        std::string rel_rgb_path_r;
         // Extract the first two columns (timestamp and rgb path). Ignore the rest.
-        if (ss >> t && ss >> rel_rgb_path) {
-            timestamps.push_back(t);
-            imageFilenames.push_back(pathToSequence + "/" + rel_rgb_path);
+        if (ss >> t_l && ss >> rel_rgb_path_l && ss >> t_r && ss >> rel_rgb_path_r) {
+            timestamps.push_back(t_l);
+            imageFilenames_l.push_back(pathToSequence + "/" + rel_rgb_path_l);
+            imageFilenames_r.push_back(pathToSequence + "/" + rel_rgb_path_r);
         }
     }
 }

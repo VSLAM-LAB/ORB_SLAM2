@@ -52,10 +52,10 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
 {
     // Load camera parameters from calibration file
     cv::FileStorage fCalibration(strCalibrationPath, cv::FileStorage::READ);
-    float fx = fCalibration["Camera.fx"];
-    float fy = fCalibration["Camera.fy"];
-    float cx = fCalibration["Camera.cx"];
-    float cy = fCalibration["Camera.cy"];
+    float fx = fCalibration["Camera0.fx"];
+    float fy = fCalibration["Camera0.fy"];
+    float cx = fCalibration["Camera0.cx"];
+    float cy = fCalibration["Camera0.cy"];
 
     cv::Mat K = cv::Mat::eye(3,3,CV_32F);
     K.at<float>(0,0) = fx;
@@ -65,11 +65,11 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
     K.copyTo(mK);
 
     cv::Mat DistCoef(4,1,CV_32F);
-    DistCoef.at<float>(0) = fCalibration["Camera.k1"];
-    DistCoef.at<float>(1) = fCalibration["Camera.k2"];
-    DistCoef.at<float>(2) = fCalibration["Camera.p1"];
-    DistCoef.at<float>(3) = fCalibration["Camera.p2"];
-    const float k3 = fCalibration["Camera.k3"];
+    DistCoef.at<float>(0) = fCalibration["Camera0.k1"];
+    DistCoef.at<float>(1) = fCalibration["Camera0.k2"];
+    DistCoef.at<float>(2) = fCalibration["Camera0.p1"];
+    DistCoef.at<float>(3) = fCalibration["Camera0.p2"];
+    const float k3 = fCalibration["Camera0.k3"];
     if(k3!=0)
     {
         DistCoef.resize(5);
@@ -77,7 +77,7 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
     }
     DistCoef.copyTo(mDistCoef);
 
-    float fps = fCalibration["Camera.fps"];
+    float fps = fCalibration["Camera0.fps"];
     if(fps==0)
         fps=30;
 
@@ -85,8 +85,8 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
     mMinFrames = 0;
     mMaxFrames = fps;
 
-    if (!fCalibration["Camera.RGB"].empty())
-        mbRGB = bool(int(fCalibration["Camera.RGB"]));
+    if (!fCalibration["Camera0.RGB"].empty())
+        mbRGB = bool(int(fCalibration["Camera0.RGB"]));
 
     cout << endl << "[Tracking.cc] Camera Parameters: " << strCalibrationPath << endl;
     cout << "- fx: " << fx << endl;
@@ -104,7 +104,7 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
 
     if(sensor==System::RGBD)
         {
-            mDepthMapFactor = fCalibration["depth_factor"];
+            mDepthMapFactor = float(fCalibration["Depth0.factor"]);
             cout << "- Depth Map Factor: " << mDepthMapFactor << endl;
             if(fabs(mDepthMapFactor)<1e-5)
                 mDepthMapFactor=1;
@@ -122,8 +122,8 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
     int fIniThFAST = fSettings["ORBextractor.iniThFAST"];
     int fMinThFAST = fSettings["ORBextractor.minThFAST"];
 
-    int w = fCalibration["Camera.w"];
-    int h = fCalibration["Camera.h"];
+    int w = fCalibration["Camera0.w"];
+    int h = fCalibration["Camera0.h"];
     nFeatures = int(0.00682966807 * (w * h) - 1098.0740336);
     if (nFeatures < 1000)
         nFeatures = 1000;
@@ -149,10 +149,10 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
     {
         cout << endl  << "[Tracking.cc] RGB-D/STEREO Parameters: " << strSettingPath << endl;
 
-        mbf = fSettings["Camera.bf"];
+        mbf = float(fCalibration["Stereo.bf"]) * fx;
         cout << "- bf: " << mbf << endl;
 
-        mThDepth = mbf *( float)fSettings["ThDepth"] / fx;
+        mThDepth = mbf *(float)fSettings["ThDepth"] / fx;
         cout << "- Depth Threshold: " << mThDepth << endl;
 
     }
@@ -1563,10 +1563,10 @@ void Tracking::Reset()
 void Tracking::ChangeCalibration(const string &strSettingPath)
 {
     cv::FileStorage fSettings(strSettingPath, cv::FileStorage::READ);
-    float fx = fSettings["Camera.fx"];
-    float fy = fSettings["Camera.fy"];
-    float cx = fSettings["Camera.cx"];
-    float cy = fSettings["Camera.cy"];
+    float fx = fSettings["Camera0.fx"];
+    float fy = fSettings["Camera0.fy"];
+    float cx = fSettings["Camera0.cx"];
+    float cy = fSettings["Camera0.cy"];
 
     cv::Mat K = cv::Mat::eye(3,3,CV_32F);
     K.at<float>(0,0) = fx;
@@ -1576,11 +1576,11 @@ void Tracking::ChangeCalibration(const string &strSettingPath)
     K.copyTo(mK);
 
     cv::Mat DistCoef(4,1,CV_32F);
-    DistCoef.at<float>(0) = fSettings["Camera.k1"];
-    DistCoef.at<float>(1) = fSettings["Camera.k2"];
-    DistCoef.at<float>(2) = fSettings["Camera.p1"];
-    DistCoef.at<float>(3) = fSettings["Camera.p2"];
-    const float k3 = fSettings["Camera.k3"];
+    DistCoef.at<float>(0) = fSettings["Camera0.k1"];
+    DistCoef.at<float>(1) = fSettings["Camera0.k2"];
+    DistCoef.at<float>(2) = fSettings["Camera0.p1"];
+    DistCoef.at<float>(3) = fSettings["Camera0.p2"];
+    const float k3 = fSettings["Camera0.k3"];
     if(k3!=0)
     {
         DistCoef.resize(5);

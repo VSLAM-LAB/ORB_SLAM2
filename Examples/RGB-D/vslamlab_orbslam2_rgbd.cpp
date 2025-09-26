@@ -34,9 +34,8 @@ namespace ORB_SLAM2{
     using Seconds = double;
 }
 
-void LoadImages(const string &pathToSequence, const string &rgb_txt,
-                vector<string> &imageFilenames,
-                vector<ORB_SLAM2::Seconds> &timestamps,
+void LoadImages(const string &pathToSequence, const string &rgb_csv,
+                vector<string> &imageFilenames, vector<ORB_SLAM2::Seconds> &timestamps,
                 vector<string> &depthFilenames);
 std::string paddingZeros(const std::string& number, const size_t numberOfZeros = 5);
 
@@ -54,7 +53,7 @@ int main(int argc, char **argv)
     // ORB_SLAM2 PLUS inputs
     string sequence_path;
     string calibration_yaml;
-    string rgb_txt;
+    string rgb_csv;
     string exp_folder;
     string exp_id{"0"};
     string settings_yaml{"orbslam2_settings.yaml"};
@@ -67,49 +66,49 @@ int main(int argc, char **argv)
         if (arg.find("sequence_path:") != std::string::npos) {
             removeSubstring(arg, "sequence_path:");
             sequence_path =  arg;
-            std::cout << "[rgbd_vslamlab.cpp] Path to sequence = " << sequence_path << std::endl;
+            std::cout << "[mono_vslamlab.cpp] Path to sequence = " << sequence_path << std::endl;
             continue;
         }
         if (arg.find("calibration_yaml:") != std::string::npos) {
             removeSubstring(arg, "calibration_yaml:");
             calibration_yaml =  arg;
-            std::cout << "[rgbd_vslamlab.cpp] Path to calibration.yaml = " << calibration_yaml << std::endl;
+            std::cout << "[mono_vslamlab.cpp] Path to calibration.yaml = " << calibration_yaml << std::endl;
             continue;
         }
-        if (arg.find("rgb_txt:") != std::string::npos) {
-            removeSubstring(arg, "rgb_txt:");
-            rgb_txt =  arg;
-            std::cout << "[rgbd_vslamlab.cpp] Path to rgb_txt = " << rgb_txt << std::endl;
+        if (arg.find("rgb_csv:") != std::string::npos) {
+            removeSubstring(arg, "rgb_csv:");
+            rgb_csv =  arg;
+            std::cout << "[mono_vslamlab.cpp] Path to rgb_csv = " << rgb_csv << std::endl;
             continue;
         }
         if (arg.find("exp_folder:") != std::string::npos) {
             removeSubstring(arg, "exp_folder:");
             exp_folder =  arg;
-            std::cout << "[rgbd_vslamlab.cpp] Path to exp_folder = " << exp_folder << std::endl;
+            std::cout << "[mono_vslamlab.cpp] Path to exp_folder = " << exp_folder << std::endl;
             continue;
         }
         if (arg.find("exp_id:") != std::string::npos) {
             removeSubstring(arg, "exp_id:");
             exp_id =  arg;
-            std::cout << "[rgbd_vslamlab.cpp] Exp id = " << exp_id << std::endl;
+            std::cout << "[mono_vslamlab.cpp] Exp id = " << exp_id << std::endl;
             continue;
         }
         if (arg.find("settings_yaml:") != std::string::npos) {
             removeSubstring(arg, "settings_yaml:");
             settings_yaml =  arg;
-            std::cout << "[rgbd_vslamlab.cpp] Path to settings_yaml = " << settings_yaml << std::endl;
+            std::cout << "[mono_vslamlab.cpp] Path to settings_yaml = " << settings_yaml << std::endl;
             continue;
         }
         if (arg.find("verbose:") != std::string::npos) {
             removeSubstring(arg, "verbose:");
             verbose = bool(std::stoi(arg));
-            std::cout << "[rgbd_vslamlab.cpp] Activate Visualization = " << verbose << std::endl;
+            std::cout << "[mono_vslamlab.cpp] Activate Visualization = " << verbose << std::endl;
             continue;
         }
         if (arg.find("vocabulary:") != std::string::npos) {
             removeSubstring(arg, "vocabulary:");
             vocabulary = arg;
-            std::cout << "[rgbd_vslamlab.cpp] Path to vocabulary = " << vocabulary << std::endl;
+            std::cout << "[mono_vslamlab.cpp] Path to vocabulary = " << vocabulary << std::endl;
             continue;
         }
     }
@@ -119,7 +118,7 @@ int main(int argc, char **argv)
     vector<string> imageFilenames{};
     vector<ORB_SLAM2::Seconds> timestamps{};
     vector<string> depthFilenames{};
-    LoadImages(sequence_path, rgb_txt, imageFilenames, timestamps, depthFilenames);
+    LoadImages(sequence_path, rgb_csv, imageFilenames, timestamps, depthFilenames);
 
     size_t nImages = imageFilenames.size();
 
@@ -143,7 +142,6 @@ int main(int argc, char **argv)
         // Read image from file
         im = cv::imread(imageFilenames[ni],cv::IMREAD_UNCHANGED);
         imD = cv::imread(depthFilenames[ni],cv::IMREAD_UNCHANGED);
-
         ORB_SLAM2::Seconds tframe = timestamps[ni];
 
         // Pass the image to the SLAM system
@@ -182,44 +180,47 @@ int main(int argc, char **argv)
 
     // Save camera trajectory
     string resultsPath_expId = exp_folder + "/" + paddingZeros(exp_id);
-    SLAM.SaveTrajectoryTUM(resultsPath_expId + "_" + "FrameTrajectory.txt");
-    SLAM.SaveKeyFrameTrajectoryTUM(resultsPath_expId + "_" + "KeyFrameTrajectory.txt");
+    SLAM.SaveKeyFrameTrajectoryTUM(resultsPath_expId + "_" + "KeyFrameTrajectory.csv");
 
     return 0;
 }
 
-void LoadImages(const string &pathToSequence, const string &rgb_txt,
-                vector<string> &imageFilenames,
-                vector<ORB_SLAM2::Seconds> &timestamps,
+void LoadImages(const string &pathToSequence, const string &rgb_csv,
+                vector<string> &imageFilenames, vector<ORB_SLAM2::Seconds> &timestamps,
                 vector<string> &depthFilenames)
 {
 
-    ifstream times;
-    times.open(rgb_txt.c_str());
+    imageFilenames.clear();
+    timestamps.clear();
+    depthFilenames.clear();
 
-    string s0;
-    while(!times.eof())
-    {
-        string s;
-        getline(times,s);
-        if(!s.empty())
-        {
-            stringstream ss;
-            ss << s;
+    std::ifstream in(rgb_csv);
 
-            ORB_SLAM2::Seconds t;
-            ss >> t;
+    std::string line;
+
+    // Drop the header 
+    if (!std::getline(in, line)) return;
+
+    // Read data lines
+    while (std::getline(in, line)) {
+        if (line.empty()) continue;
+        if (!line.empty() && line.back() == '\r') line.pop_back(); // handle CRLF
+
+        // Replace commas with spaces so operator>> splits cleanly
+        std::replace(line.begin(), line.end(), ',', ' ');
+
+        std::stringstream ss(line);
+
+        ORB_SLAM2::Seconds t;
+        std::string rel_rgb_path;
+        ORB_SLAM2::Seconds t_depth;
+        std::string rel_depth_path;
+
+        // Extract the first two columns (timestamp and rgb path). Ignore the rest.
+        if (ss >> t && ss >> rel_rgb_path && ss >> t_depth && ss >> rel_depth_path) {
             timestamps.push_back(t);
-
-            string sRGB;
-            ss >> sRGB;
-            imageFilenames.push_back(pathToSequence + "/" +  sRGB);
-
-            ss >> t;
-
-            string sDepth;
-            ss >> sDepth;
-            depthFilenames.push_back(pathToSequence + "/" +  sDepth);
+            imageFilenames.push_back(pathToSequence + "/" + rel_rgb_path);
+            depthFilenames.push_back(pathToSequence + "/" + rel_depth_path);
         }
     }
 }

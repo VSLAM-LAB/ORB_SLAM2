@@ -73,6 +73,12 @@ target_link_libraries(${PROJECT_NAME}
 add_executable(vslamlab_orbslam2_mono Examples/mono/vslamlab_orbslam2_mono.cpp)
 target_link_libraries(vslamlab_orbslam2_mono ${PROJECT_NAME})
 
+add_executable(vslamlab_orbslam2_rgbd Examples/RGB-D/vslamlab_orbslam2_rgbd.cpp)
+target_link_libraries(vslamlab_orbslam2_rgbd ${PROJECT_NAME})
+
+add_executable(vslamlab_orbslam2_stereo Examples/Stereo/vslamlab_orbslam2_stereo.cpp)
+target_link_libraries(vslamlab_orbslam2_stereo ${PROJECT_NAME})
+
 # Install targets and headers
 install(TARGETS ${PROJECT_NAME} vslamlab_orbslam2_mono
         RUNTIME DESTINATION bin

@@ -33,13 +33,13 @@ Viewer::Viewer(System* pSystem, FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer
 {
     cv::FileStorage fCalibration(strCalibrationPath, cv::FileStorage::READ);
 
-    float fps = fCalibration["Camera.fps"];
+    float fps = fCalibration["Camera0.fps"];
     if(fps<1)
         fps=30;
     mT = 1e3/fps;
 
-    mImageWidth = fCalibration["Camera.w"];
-    mImageHeight = fCalibration["Camera.h"];
+    mImageWidth = fCalibration["Camera0.w"];
+    mImageHeight = fCalibration["Camera0.h"];
     if(mImageWidth<1 || mImageHeight<1)
     {
         mImageWidth = 640;
